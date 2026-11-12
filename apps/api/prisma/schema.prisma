@@ -36,7 +36,8 @@ model User {
   resetTokenExp   DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-
+  preferredLanguage Language @default(en)
+  
   memberships     BusinessMember[]
   refreshTokens   RefreshToken[]
   consents        ConsentRecord[]
@@ -247,4 +248,29 @@ model AuditLog {
 
   @@index([userId])
   @@index([entity, entityId])
+}
+model Lesson {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  category        String   // recordkeeping | budgeting | cashflow | literacy | growth | islamic-finance | financing | investment-risk | fraud
+  order           Int      @default(0)
+  durationMinutes Int      @default(3)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  translations    LessonTranslation[]
+
+  @@index([category])
+}
+
+model LessonTranslation {
+  id       String   @id @default(uuid())
+  lessonId String
+  language Language
+  title    String
+  summary  String
+  content  String   @db.Text
+  lesson   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, language])
 }

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { AppError } from "../utils/error";
+import { AppError } from "../utils/errors";
 import { verifyAccess } from "../utils/tokens";
 
 export interface AuthedRequest extends Request {

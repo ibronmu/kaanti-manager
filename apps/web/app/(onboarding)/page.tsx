@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { api, ApiError } from "@/app/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { BUSINESS_CATEGORIES, NIGERIAN_STATES } from "@kaanti/shared";
 
 const schema = z.object({

@@ -11,6 +11,9 @@
     "prisma:seed": "ts-node prisma/seed.ts",
     "test": "jest --runInBand"
   },
+  "prisma": {
+  "seed": "ts-node prisma/seed.ts"
+},
   "dependencies": {
     "@prisma/client": "^5.19.0",
     "bcrypt": "^5.1.1",

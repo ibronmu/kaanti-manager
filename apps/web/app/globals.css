@@ -4,7 +4,7 @@
 
 :root { --font-inter: "Inter", system-ui, sans-serif; }
 
-html, body { height: 100%; background: #F7F8FB; color: #0B1B3B; }
+html, body { height: 100%; background: #F7F8FB; color: #0247cf; }
 * { box-sizing: border-box; }
 
 .btn-primary { @apply inline-flex items-center justify-center rounded-lg bg-emerald px-4 py-2 text-white font-medium hover:bg-emerald-600 disabled:opacity-50; }

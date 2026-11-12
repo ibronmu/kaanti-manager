@@ -58,7 +58,6 @@ export const refreshSession = async (refreshToken: string) => {
   if (!stored || stored.revokedAt || stored.expiresAt < new Date())
     throw new AppError("Refresh token invalid", 401);
 
-  // Rotate: revoke old, issue new
   await prisma.refreshToken.update({
     where: { id: stored.id },
     data: { revokedAt: new Date() },

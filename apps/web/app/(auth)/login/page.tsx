@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { api, ApiError } from "@/app/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { useState } from "react";
 
 const schema = z.object({
