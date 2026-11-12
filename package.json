@@ -1,14 +1,21 @@
-{
-  "name": "kaanti_manager",
+
+  {
+  "name": "kaanti-manager",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.28.1",
+  "engines": { "node": ">=20", "pnpm": ">=9" },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "pnpm -r --parallel --filter @kaanti/web --filter @kaanti/api run dev",
+    "dev:web": "pnpm --filter @kaanti/web dev",
+    "dev:api": "pnpm --filter @kaanti/api dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm --filter @kaanti/api test"
   },
+
   "dependencies": {
+    "dotenv": "^18.0.10",
     "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0"

@@ -10,18 +10,15 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
+node_modules
+.env
+.env.local
+dist
+.next
+coverage
+*.log
 .DS_Store
+apps/api/prisma/*.db
 *.pem
 
 # debug

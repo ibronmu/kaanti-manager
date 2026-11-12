@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum Language {
+  en
+  ha
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  passwordHash    String
+  fullName        String
+  phone           String?
+  emailVerified   Boolean  @default(false)
+  emailVerifyTok  String?
+  resetToken      String?
+  resetTokenExp   DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  memberships     BusinessMember[]
+  refreshTokens   RefreshToken[]
+  consents        ConsentRecord[]
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Business {
+  id                String   @id @default(uuid())
+  name              String
+  category          String
+  type              String
+  location          String
+  phone             String
+  preferredLanguage Language @default(en)
+  currency          String   @default("NGN")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  members           BusinessMember[]
+  transactions      Transaction[]
+  incomeCategories  IncomeCategory[]
+  expenseCategories ExpenseCategory[]
+  inventoryItems    InventoryItem[]
+  customers         Customer[]
+  reports           FinancialReport[]
+}
+
+model BusinessMember {
+  id         String   @id @default(uuid())
+  businessId String
+  userId     String
+  role       UserRole @default(OWNER)
+  createdAt  DateTime @default(now())
+
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+  @@index([userId])
+}
+
+model IncomeCategory {
+  id         String @id @default(uuid())
+  businessId String
+  name       String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([businessId, name])
+}
+
+model ExpenseCategory {
+  id         String @id @default(uuid())
+  businessId String
+  name       String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([businessId, name])
+}
+
+model Transaction {
+  id               String          @id @default(uuid())
+  businessId       String
+  type             TransactionType
+  amount           Decimal         @db.Decimal(18, 2)
+  description      String
+  date             DateTime
+  incomeCategoryId String?
+  expenseCategoryId String?
+  customerId       String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  business         Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  incomeCategory   IncomeCategory? @relation(fields: [incomeCategoryId], references: [id])
+  expenseCategory  ExpenseCategory? @relation(fields: [expenseCategoryId], references: [id])
+  customer         Customer?       @relation(fields: [customerId], references: [id])
+
+  @@index([businessId, date])
+}
+
+model InventoryItem {
+  id         String   @id @default(uuid())
+  businessId String
+  name       String
+  sku        String?
+  quantity   Int      @default(0)
+  costPrice  Decimal  @db.Decimal(18, 2)
+  sellPrice  Decimal  @db.Decimal(18, 2)
+  lowStock   Int      @default(5)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+}
+
+model Customer {
+  id         String   @id @default(uuid())
+  businessId String
+  name       String
+  phone      String?
+  email      String?
+  balance    Decimal  @default(0) @db.Decimal(18, 2)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([businessId])
+}
+
+model FinancialReport {
+  id         String   @id @default(uuid())
+  businessId String
+  title      String
+  periodStart DateTime
+  periodEnd  DateTime
+  format     String   // PDF | CSV
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+}
+
+model PartnerInstitution {
+  id       String @id @default(uuid())
+  name     String
+  type     String  // Bank | NBFI | Cooperative
+  contact  String?
+  website  String?
+  financingProducts FinancingProduct[]
+  investmentProducts InvestmentProduct[]
+}
+
+model FinancingProduct {
+  id              String  @id @default(uuid())
+  partnerId       String
+  name            String
+  structure       String // Murabaha | Musharakah | Mudarabah | Ijarah | Salam
+  description     String
+  eligibility     String
+  terms           String
+  fees            String
+  isDemo          Boolean @default(true)
+  partner         PartnerInstitution @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  interests       FinancingInterest[]
+}
+
+model InvestmentProduct {
+  id          String  @id @default(uuid())
+  partnerId   String
+  name        String
+  category    String  // Sukuk | Fund | Other
+  description String
+  riskLevel   String
+  minAmount   Decimal? @db.Decimal(18, 2)
+  isDemo      Boolean @default(true)
+  partner     PartnerInstitution @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+}
+
+model FinancingInterest {
+  id             String   @id @default(uuid())
+  userId         String
+  productId      String
+  createdAt      DateTime @default(now())
+  product        FinancingProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model ConsentRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  purpose   String
+  granted   Boolean
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  entity     String
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+}
